@@ -3,7 +3,7 @@ import { PAYMENT_CONFIG } from '../config/payment';
 
 // const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : '/api';
 
-const API_BASE_URL = 'https://serveforpakbh.onrender.com/api';
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : 'https://serveforpakbh.onrender.com/api';
 
 export interface PaymentIntentData {
   amount: number;

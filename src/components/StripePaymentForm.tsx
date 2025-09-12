@@ -208,18 +208,20 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
       )}
 
       {/* Test Cards Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-bold text-blue-800 mb-2 flex items-center">
-          <CreditCard size={16} className="mr-2" />
-          Test Mode - Use These Cards
-        </h4>
-        <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>Success:</strong> 4242 4242 4242 4242</p>
-          <p><strong>Declined:</strong> 4000 0000 0000 0002</p>
-          <p><strong>Requires Auth:</strong> 4000 0025 0000 3155</p>
-          <p className="text-blue-600 mt-2">Use any future expiry date and any 3-digit CVC</p>
+      {PAYMENT_CONFIG.stripe.environment === 'test' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-bold text-blue-800 mb-2 flex items-center">
+            <CreditCard size={16} className="mr-2" />
+            Test Mode - Use These Cards
+          </h4>
+          <div className="text-sm text-blue-700 space-y-1">
+            <p><strong>Success:</strong> 4242 4242 4242 4242</p>
+            <p><strong>Declined:</strong> 4000 0000 0000 0002</p>
+            <p><strong>Requires Auth:</strong> 4000 0025 0000 3155</p>
+            <p className="text-blue-600 mt-2">Use any future expiry date and any 3-digit CVC</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Submit Button */}
       <button

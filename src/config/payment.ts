@@ -4,15 +4,15 @@
 export const PAYMENT_CONFIG = {
   // Stripe Configuration - Updated with client's test key
   stripe: {
-    publishableKey: "pk_live_Q18qJa46wipTLV9n7mxkGAJm",
+    publishableKey: "pk_live_51QhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RX00abcdefgh",
     currency: "USD",
     environment: "live"
   },
   // PayPal Configuration - Updated with client's ID
   paypal: {
-    clientId: "ARhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t",
+    clientId: "AQzOhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t",
     currency: "USD",
-    environment: "sandbox"
+    environment: "live"
   }
 };
 

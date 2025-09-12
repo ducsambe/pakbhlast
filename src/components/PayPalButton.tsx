@@ -24,7 +24,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Get PayPal Client ID
-  const paypalClientId = "ARhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t";
+  const paypalClientId = "AQzOhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t";
   
   // Check if PayPal is properly configured
   const isPayPalConfigured = !!paypalClientId && paypalClientId !== "YOUR_PAYPAL_CLIENT_ID";
@@ -34,7 +34,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
     "client-id": paypalClientId,
     currency: "USD",
     intent: "capture",
-    "enable-funding": "card",
+    "enable-funding": "card,venmo",
     "disable-funding": "paylater,venmo", // Disabled Pay Later as requested
     "data-sdk-integration-source": "button-factory"
   };
@@ -55,6 +55,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 
   // Handle payment creation
   const createOrder = (data: any, actions: any) => {
+    console.log('Creating PayPal order with amount:', amount);
     return actions.order.create({
       purchase_units: [{
         amount: {
@@ -69,7 +70,8 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
         },
         items: formatItemsForPayPal(items),
         description: "Premium Afro Kinky Bulk Hair Extensions - PAKBH",
-        soft_descriptor: "PAKBH HAIR EXT" // Shows on customer's statement
+        soft_descriptor: "PAKBH HAIR EXT", // Shows on customer's statement
+        custom_id: `order_${Date.now()}`
       }],
       payer: customerInfo.email ? {
         email_address: customerInfo.email,
@@ -77,27 +79,44 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
           given_name: customerInfo.name.split(' ')[0] || '',
           surname: customerInfo.name.split(' ').slice(1).join(' ') || ''
         } : undefined,
-        phone: customerInfo.phone ? {
-          phone_type: "MOBILE",
-          phone_number: {
-            national_number: customerInfo.phone.replace(/\D/g, '')
-          }
-        } : undefined
       } : undefined,
       application_context: {
         shipping_preference: "NO_SHIPPING", // We handle shipping separately
         user_action: "PAY_NOW",
-        brand_name: "PAKBH Hair Extensions"
+        brand_name: "PAKBH Hair Extensions",
+        return_url: `${window.location.origin}/payment-success`,
+        cancel_url: `${window.location.origin}/cart`
       }
     });
   };
 
   // Handle payment approval
   const onApprove = async (data: any, actions: any) => {
+    console.log('PayPal payment approved:', data);
     setIsProcessing(true);
     try {
       const details = await actions.order.capture();
       console.log('PayPal payment successful:', details);
+      
+      // Process payment on server
+      const serverResponse = await fetch(`${import.meta.env.DEV ? 'http://localhost:3001' : 'https://serveforpakbh.onrender.com'}/api/process-paypal-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderID: details.id,
+          payerID: details.payer.payer_id,
+          amount: amount,
+          customer: customerInfo,
+          items: items
+        }),
+      });
+
+      if (!serverResponse.ok) {
+        throw new Error('Server processing failed');
+      }
+
       onPaymentSuccess(details);
     } catch (error) {
       console.error('PayPal capture error:', error);
