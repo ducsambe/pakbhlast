@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CreditCard, Shield, Lock, CheckCircle, Truck, AlertCircle, Loader2, Wallet, Check, MessageCircle } from 'lucide-react';
+import { X, CreditCard, Shield, Lock, CheckCircle, Truck, AlertCircle, Loader2, Wallet, Check } from 'lucide-react';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { PAYMENT_CONFIG } from '../config/payment';
 import PostPaymentModal from './PostPaymentModal';
@@ -102,7 +102,7 @@ const PaymentFormComponent: React.FC<{
             city: formData.city,
             state: formData.state,
             postal_code: formData.zipCode,
-            country: 'US',
+            country: formData.country || 'US',
           },
         },
       });
@@ -146,7 +146,6 @@ const PaymentFormComponent: React.FC<{
       } else {
         throw new Error('Payment was not completed successfully');
       }
-
     } catch (error) {
       onPaymentResult({
         type: 'error',
@@ -251,7 +250,7 @@ const PaymentFormComponent: React.FC<{
 };
 
 // Add ChevronDown component for mobile toggle
-const ChevronDown = ({ className, size }: { className?: string; size: number }) => (
+const ChevronDown = ({ className, size = 20 }: { className?: string; size?: number }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="6,9 12,15 18,9"></polyline>
   </svg>
@@ -313,11 +312,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
       setPaymentResult(result.paymentData);
       setCompletedPaymentMethod('stripe');
       setShowPostPayment(true);
-      // Keep payment modal open until user closes post-payment modal
+      // Don't close the modal immediately, let PostPaymentModal handle it
     } else {
-      // Show error message
-      console.error('Payment failed:', result.message);
-      alert(`Payment failed: ${result.message || 'Please try again.'}`);
+      // Show error in an alert for now - you can enhance this later
+      alert(result.message || 'Payment failed. Please try again.');
     }
 
     // Send order notification email for successful payments
@@ -354,6 +352,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
     setPaymentResult(details);
     setCompletedPaymentMethod('paypal');
     setShowPostPayment(true);
+    // Don't close the modal immediately, let PostPaymentModal handle it
 
     // Send order notification email
     sendOrderNotificationEmail({
@@ -384,7 +383,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
 
   const handlePayPalError = (error: any) => {
     console.error('PayPal payment error:', error);
-    alert(`PayPal payment failed: ${error.message || 'Please try again.'}`);
+    // Show error in an alert for now - you can enhance this later
+    alert('PayPal payment failed. Please try again.');
   };
 
   const countries = [
@@ -664,7 +664,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
                 {!isFormValid && (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                     <p className="text-gray-600 text-sm">
-                      Veuillez compléter les informations de livraison ci-dessus pour continuer avec le paiement.
+                      Please complete the delivery information above to continue with payment.
                     </p>
                   </div>
                 )}
@@ -738,19 +738,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
                 {/* Order Totals */}
                 <div className="space-y-3 pb-4 border-b border-gray-200 mb-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Sous-total</span>
+                    <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">${subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Livraison</span>
-                    <span className="font-medium text-green-600">GRATUITE</span>
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="font-medium text-green-600">FREE</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-900">Total</span>
                   <div className="text-right">
-                    <span className="text-sm text-gray-600">EUR </span>
+                    <span className="text-sm text-gray-600">USD </span>
                     <span className="text-xl font-bold text-gray-900">${finalTotal.toFixed(2)}</span>
                   </div>
                 </div>
@@ -760,11 +760,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
                   <div className="grid grid-cols-2 gap-4 text-center text-xs">
                     <div className="flex flex-col items-center space-y-1">
                       <Shield size={16} className="text-green-600" />
-                      <span className="text-gray-600">SSL Sécurisé</span>
+                      <span className="text-gray-600">SSL Secure</span>
                     </div>
                     <div className="flex flex-col items-center space-y-1">
                       <Truck size={16} className="text-blue-600" />
-                      <span className="text-gray-600">Livraison Gratuite</span>
+                      <span className="text-gray-600">Free Shipping</span>
                     </div>
                   </div>
                 </div>
@@ -779,7 +779,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
         isOpen={showPostPayment}
         onClose={() => {
           setShowPostPayment(false);
-          onClose(); // Close the main payment modal
+          onClose(); // Close the main payment modal after post-payment modal closes
         }}
         paymentResult={paymentResult}
         orderDetails={{

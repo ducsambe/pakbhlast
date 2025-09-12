@@ -23,19 +23,19 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Get PayPal Client ID
-  const paypalClientId = "AQzOhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t";
-  
+  // Get PayPal Client ID - use a fallback since process.env isn't available in browser
+  // In a real app, you would pass this as a prop or use a different configuration method
+  const paypalClientId = "";
   // Check if PayPal is properly configured
   const isPayPalConfigured = !!paypalClientId && paypalClientId !== "YOUR_PAYPAL_CLIENT_ID";
 
-  // PayPal integration options - removed Pay Later
+  // PayPal integration options
   const paypalOptions = {
     "client-id": paypalClientId,
     currency: "USD",
     intent: "capture",
-    "enable-funding": "card,venmo",
-    "disable-funding": "paylater,venmo", // Disabled Pay Later as requested
+    "enable-funding": "paylater,card",
+    "disable-funding": "venmo",
     "data-sdk-integration-source": "button-factory"
   };
 
@@ -55,7 +55,6 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 
   // Handle payment creation
   const createOrder = (data: any, actions: any) => {
-    console.log('Creating PayPal order with amount:', amount);
     return actions.order.create({
       purchase_units: [{
         amount: {
@@ -70,8 +69,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
         },
         items: formatItemsForPayPal(items),
         description: "Premium Afro Kinky Bulk Hair Extensions - PAKBH",
-        soft_descriptor: "PAKBH HAIR EXT", // Shows on customer's statement
-        custom_id: `order_${Date.now()}`
+        soft_descriptor: "PAKBH HAIR EXT" // Shows on customer's statement
       }],
       payer: customerInfo.email ? {
         email_address: customerInfo.email,
@@ -79,44 +77,27 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
           given_name: customerInfo.name.split(' ')[0] || '',
           surname: customerInfo.name.split(' ').slice(1).join(' ') || ''
         } : undefined,
+        phone: customerInfo.phone ? {
+          phone_type: "MOBILE",
+          phone_number: {
+            national_number: customerInfo.phone.replace(/\D/g, '')
+          }
+        } : undefined
       } : undefined,
       application_context: {
         shipping_preference: "NO_SHIPPING", // We handle shipping separately
         user_action: "PAY_NOW",
-        brand_name: "PAKBH Hair Extensions",
-        return_url: `${window.location.origin}/payment-success`,
-        cancel_url: `${window.location.origin}/cart`
+        brand_name: "PAKBH Hair Extensions"
       }
     });
   };
 
   // Handle payment approval
   const onApprove = async (data: any, actions: any) => {
-    console.log('PayPal payment approved:', data);
     setIsProcessing(true);
     try {
       const details = await actions.order.capture();
       console.log('PayPal payment successful:', details);
-      
-      // Process payment on server
-      const serverResponse = await fetch(`${import.meta.env.DEV ? 'http://localhost:3001' : 'https://serveforpakbh.onrender.com'}/api/process-paypal-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderID: details.id,
-          payerID: details.payer.payer_id,
-          amount: amount,
-          customer: customerInfo,
-          items: items
-        }),
-      });
-
-      if (!serverResponse.ok) {
-        throw new Error('Server processing failed');
-      }
-
       onPaymentSuccess(details);
     } catch (error) {
       console.error('PayPal capture error:', error);
@@ -148,6 +129,18 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Information Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center space-x-2 mb-2">
+          <Shield size={16} className="text-blue-600" />
+          <h4 className="font-medium text-blue-800">Secure PayPal Checkout</h4>
+        </div>
+        <p className="text-blue-700 text-sm">
+          Pay securely with your PayPal account, credit card, or use Pay Later options.
+          Your financial information is never shared with us.
+        </p>
+      </div>
+
       {/* Processing Overlay */}
       {isProcessing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

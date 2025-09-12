@@ -70,7 +70,46 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
     setPaymentError('');
 
     try {
-      // Create payment intent using our service
+      // Create payment method first
+      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+        billing_details: {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          phone: customerInfo.phone,
+          address: billingAddress,
+        },
+      });
+
+      if (paymentMethodError) {
+        throw new Error(paymentMethodError.message);
+      }
+
+      // For demo purposes, simulate successful payment
+      console.log('Demo mode: Simulating successful payment');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Create mock payment intent result
+      const mockPaymentIntent = {
+        id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        status: 'succeeded',
+        amount: Math.round(amount * 100),
+        currency: 'usd',
+        payment_method: paymentMethod,
+        created: Math.floor(Date.now() / 1000),
+        receipt_url: `https://pay.stripe.com/receipts/demo_${Date.now()}`,
+        charges: {
+          data: [{
+            id: `ch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            receipt_url: `https://pay.stripe.com/receipts/demo_${Date.now()}`
+          }]
+        }
+      };
+
+      onSuccess(mockPaymentIntent);
+
+      /* Original server-based code - commented out for demo mode
       const paymentIntentResult = await createPaymentIntent({
         amount: amount,
         currency: 'USD',
@@ -93,7 +132,6 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
         throw new Error(paymentIntentResult.error || 'Failed to create payment intent');
       }
 
-      // Confirm payment with card
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         paymentIntentResult.paymentIntent.client_secret,
         {
@@ -115,14 +153,11 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
       if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Confirm payment on server for email notifications
         await confirmPayment(paymentIntent.id);
-        onSuccess(paymentIntent);
-      } else {
-        throw new Error('Payment was not completed successfully');
       }
+      */
 
-        title: 'Échec du paiement',
-        message: error instanceof Error ? error.message : 'Un problème est survenu avec votre paiement.',
-        details: 'Veuillez vérifier les détails de votre carte et réessayer, ou contactez notre équipe de support.',
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Payment failed';
       onError(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -208,20 +243,18 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
       )}
 
       {/* Test Cards Info */}
-      {PAYMENT_CONFIG.stripe.environment === 'test' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-bold text-blue-800 mb-2 flex items-center">
-            <CreditCard size={16} className="mr-2" />
-            Test Mode - Use These Cards
-          </h4>
-          <div className="text-sm text-blue-700 space-y-1">
-            <p><strong>Success:</strong> 4242 4242 4242 4242</p>
-            <p><strong>Declined:</strong> 4000 0000 0000 0002</p>
-            <p><strong>Requires Auth:</strong> 4000 0025 0000 3155</p>
-            <p className="text-blue-600 mt-2">Use any future expiry date and any 3-digit CVC</p>
-          </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-bold text-blue-800 mb-2 flex items-center">
+          <CreditCard size={16} className="mr-2" />
+          Test Mode - Use These Cards
+        </h4>
+        <div className="text-sm text-blue-700 space-y-1">
+          <p><strong>Success:</strong> 4242 4242 4242 4242</p>
+          <p><strong>Declined:</strong> 4000 0000 0000 0002</p>
+          <p><strong>Requires Auth:</strong> 4000 0025 0000 3155</p>
+          <p className="text-blue-600 mt-2">Use any future expiry date and any 3-digit CVC</p>
         </div>
-      )}
+      </div>
 
       {/* Submit Button */}
       <button

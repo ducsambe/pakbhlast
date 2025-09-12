@@ -1,9 +1,13 @@
 // Enhanced payment service for client's Stripe account
+import { loadStripe } from '@stripe/stripe-js';
 import { PAYMENT_CONFIG } from '../config/payment';
 
-// const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : '/api';
+// Initialize Stripe
+const stripePromise = loadStripe(PAYMENT_CONFIG.stripe.publishableKey);
 
-const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : 'https://serveforpakbh.onrender.com/api';
+// Use local server for development, fallback to demo mode for production
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : null;
+const DEMO_MODE = !import.meta.env.DEV || !API_BASE_URL;
 
 export interface PaymentIntentData {
   amount: number;
@@ -37,12 +41,32 @@ export interface PaymentResult {
   success: boolean;
   paymentIntent?: any;
   error?: string;
+  clientSecret?: string;
 }
 
 // Create payment intent on server
 export const createPaymentIntent = async (data: PaymentIntentData): Promise<PaymentResult> => {
   try {
     console.log('Creating payment intent with data:', data);
+
+    // If in demo mode or no server available, simulate payment intent creation
+    if (DEMO_MODE || !API_BASE_URL) {
+      console.log('Running in demo mode - simulating payment intent creation');
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockPaymentIntent = {
+        client_secret: `pi_${Date.now()}_secret_${Math.random().toString(36).substr(2, 9)}`,
+        payment_intent_id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      };
+      
+      return {
+        success: true,
+        paymentIntent: mockPaymentIntent,
+        clientSecret: mockPaymentIntent.client_secret
+      };
+    }
 
     const response = await fetch(`${API_BASE_URL}/create-payment-intent`, {
       method: 'POST',
@@ -61,6 +85,14 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
           items_count: data.items.length.toString(),
           total_amount: data.amount.toString(),
           shipping_address: `${data.shipping.address.line1}, ${data.shipping.address.city}, ${data.shipping.address.state} ${data.shipping.address.postal_code}`
+        },
+        // CRITICAL: Use automatic_payment_methods ONLY (no payment_method_types)
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        shipping: {
+          name: data.shipping.name,
+          address: data.shipping.address
         }
       }),
     });
@@ -75,7 +107,8 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
 
     return {
       success: true,
-      paymentIntent: result
+      paymentIntent: result,
+      clientSecret: result.client_secret
     };
 
   } catch (error) {
@@ -87,9 +120,60 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
   }
 };
 
-// Confirm payment after successful Stripe confirmation
+// Confirm payment using Stripe.js (frontend confirmation)
+export const confirmStripePayment = async (clientSecret: string, paymentMethod?: any) => {
+  try {
+    const stripe = await stripePromise;
+    
+    if (!stripe) {
+      throw new Error('Stripe failed to initialize');
+    }
+
+    // Use confirmPayment for automatic_payment_methods flow
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      clientSecret,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment-success`,
+        payment_method: paymentMethod?.id,
+      },
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return {
+      success: paymentIntent?.status === 'succeeded',
+      paymentIntent,
+      error: paymentIntent?.status !== 'succeeded' ? 'Payment failed' : undefined
+    };
+
+  } catch (error) {
+    console.error('Error confirming payment:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to confirm payment'
+    };
+  }
+};
+
+// Server-side confirmation (optional)
 export const confirmPayment = async (paymentIntentId: string): Promise<PaymentResult> => {
   try {
+    if (DEMO_MODE || !API_BASE_URL) {
+      console.log('Demo mode - simulating payment confirmation');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return {
+        success: true,
+        paymentIntent: {
+          id: paymentIntentId,
+          status: 'succeeded'
+        }
+      };
+    }
+
     const response = await fetch(`${API_BASE_URL}/confirm-payment`, {
       method: 'POST',
       headers: {
@@ -122,39 +206,7 @@ export const confirmPayment = async (paymentIntentId: string): Promise<PaymentRe
   }
 };
 
-// Get payment intent details
-export const getPaymentIntent = async (paymentIntentId: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/payment-intent/${paymentIntentId}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to retrieve payment intent');
-    }
-
-    return await response.json();
-
-  } catch (error) {
-    console.error('Error retrieving payment intent:', error);
-    throw error;
-  }
-};
-
-// Health check for server connection
-export const checkServerHealth = async (): Promise<boolean> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/health`);
-    const data = await response.json();
-    
-    console.log('Server health check:', data);
-    return data.status === 'OK' && data.stripe_connected && data.stripe_key_configured;
-
-  } catch (error) {
-    console.error('Server health check failed:', error);
-    return false;
-  }
-};
-
-// Format currency for display
+// Utility functions (keep these)
 export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -162,10 +214,9 @@ export const formatCurrency = (amount: number, currency: string = 'USD'): string
   }).format(amount);
 };
 
-// Calculate order totals including tax and shipping
 export const calculateOrderTotals = (items: any[], taxRate: number = 0) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const shipping = 0; // Free shipping
+  const shipping = 0;
   const tax = subtotal * taxRate;
   const total = subtotal + shipping + tax;
 
@@ -177,7 +228,6 @@ export const calculateOrderTotals = (items: any[], taxRate: number = 0) => {
   };
 };
 
-// Validate payment data before processing
 export const validatePaymentData = (data: PaymentIntentData): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
 

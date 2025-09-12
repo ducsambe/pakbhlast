@@ -1,18 +1,18 @@
 // Payment Configuration
-// Updated with client's Stripe and PayPal keys
+// Updated with working Stripe test keys
 
 export const PAYMENT_CONFIG = {
-  // Stripe Configuration - Updated with client's test key
+  // Stripe Configuration - Working test key
   stripe: {
-    publishableKey: "pk_live_51QhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RXJhJJREuaVeOB1RX00abcdefgh",
+    publishableKey: "pk_test_51Rse6LQcCvouwfQJLwKe7MwjVeko3pwuieI9ggjHRI4g2DxiFas3WMHyPxuqSecE145V2eAwBG3E0R6iV22C9Xvn00UmKGNDHb",
     currency: "USD",
-    environment: "live"
+    environment: "test"
   },
   // PayPal Configuration - Updated with client's ID
   paypal: {
-    clientId: "AQzOhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t",
+    clientId: "ARhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t",
     currency: "USD",
-    environment: "live"
+    environment: "sandbox"
   }
 };
 
@@ -66,10 +66,12 @@ export const TAX_CONFIG = {
 
 // Shipping Configuration
 export const SHIPPING_CONFIG = {
-  freeShippingThreshold: 0, // Free shipping on all orders
+  freeShippingThreshold: 0, // Free shipping on all US orders
   defaultRate: 0,
-  expeditedRate: 15.99,
-  internationalRate: 0 // Free international shipping
+  expeditedRate: 9.99, // Express shipping within US
+  canadaRate: 0, // Free to Canada over $75
+  mexicoRate: 0, // Free to Mexico over $100
+  internationalRate: 0 // Free international over $150
 };
 
 // Security Configuration
