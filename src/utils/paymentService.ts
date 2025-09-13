@@ -1,9 +1,5 @@
 // Enhanced payment service for client's Stripe account
-import { loadStripe } from '@stripe/stripe-js';
-import { PAYMENT_CONFIG } from '../config/payment';
-
-// Initialize Stripe
-const stripePromise = loadStripe(PAYMENT_CONFIG.stripe.publishableKey);
+import { stripePromise } from './stripeHelpers';
 
 // Use local server for development, fallback to demo mode for production
 const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : null;
@@ -42,6 +38,7 @@ export interface PaymentResult {
   paymentIntent?: any;
   error?: string;
   clientSecret?: string;
+  paymentIntentId?: string;
 }
 
 // Create payment intent on server
@@ -64,7 +61,8 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
       return {
         success: true,
         paymentIntent: mockPaymentIntent,
-        clientSecret: mockPaymentIntent.client_secret
+        clientSecret: mockPaymentIntent.client_secret,
+        paymentIntentId: mockPaymentIntent.id
       };
     }
 
@@ -104,7 +102,8 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
     return {
       success: true,
       paymentIntent: result,
-      clientSecret: result.client_secret
+      clientSecret: result.client_secret,
+      paymentIntentId: result.id || result.payment_intent_id
     };
 
   } catch (error) {
@@ -136,6 +135,7 @@ export const confirmStripePayment = async (
         card: paymentMethodData.card,
         billing_details: paymentMethodData.billing_details,
       },
+      return_url: window.location.origin + '/payment-success',
     });
 
     if (error) {

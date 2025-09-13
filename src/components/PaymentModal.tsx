@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Shield, Lock, CheckCircle, Truck, AlertCircle, Loader2, Wallet, Check } from 'lucide-react';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { PAYMENT_CONFIG } from '../config/payment';
 import PostPaymentModal from './PostPaymentModal';
 import PayPalButton from './PayPalButton';
 import { sendOrderNotificationEmail } from '../utils/emailService';
@@ -87,9 +86,13 @@ const PaymentFormComponent: React.FC<{
         throw new Error(paymentIntentResult.error || 'Failed to create payment intent');
       }
 
+      if (!paymentIntentResult.clientSecret) {
+        throw new Error('No client secret received from payment intent creation');
+      }
+
       // Step 2: Confirm payment using the updated service
       const confirmResult = await confirmStripePayment(
-        paymentIntentResult.clientSecret!,
+        paymentIntentResult.clientSecret,
         {
           card: cardElement,
           billing_details: {

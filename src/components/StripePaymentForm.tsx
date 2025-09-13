@@ -6,7 +6,6 @@ import {
   useElements
 } from '@stripe/react-stripe-js';
 import { Lock, CreditCard, CheckCircle, AlertCircle, Loader2, Shield } from 'lucide-react';
-import { PAYMENT_CONFIG } from '../config/payment';
 import { createPaymentIntent, confirmPayment } from '../utils/paymentService';
 import { stripePromise } from '../utils/stripeHelpers';
 
@@ -236,7 +235,7 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
       {paymentError && (
         <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
           <div className="flex items-center space-x-2">
-            <AlertCircle size={20} className="text-red-600" />
+            <AlertCircle size={20} className = 'text-red-600' />
             <p className="text-red-700 font-medium">{paymentError}</p>
           </div>
         </div>

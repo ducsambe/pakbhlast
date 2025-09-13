@@ -1,7 +1,7 @@
 import { PAYMENT_CONFIG } from '../config/payment';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Initialize Stripe with client's publishable key
+// Create a single Stripe instance that will be reused throughout the app
 export const stripePromise = loadStripe(PAYMENT_CONFIG.stripe.publishableKey);
 
 // Enhanced payment processing
