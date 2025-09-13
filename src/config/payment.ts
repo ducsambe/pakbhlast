@@ -5,13 +5,13 @@ export const PAYMENT_CONFIG = {
   // Stripe Configuration - Working test key
   stripe: {
     publishableKey: "pk_test_51Rse6LQcCvouwfQJLwKe7MwjVeko3pwuieI9ggjHRI4g2DxiFas3WMHyPxuqSecE145V2eAwBG3E0R6iV22C9Xvn00UmKGNDHb",
-    currency: "USD",
+    currency: "usd",
     environment: "test"
   },
   // PayPal Configuration - Updated with client's ID
   paypal: {
     clientId: "ARhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t",
-    currency: "USD",
+    currency: "usd",
     environment: "sandbox"
   }
 };

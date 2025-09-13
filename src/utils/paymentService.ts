@@ -86,10 +86,6 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
           total_amount: data.amount.toString(),
           shipping_address: `${data.shipping.address.line1}, ${data.shipping.address.city}, ${data.shipping.address.state} ${data.shipping.address.postal_code}`
         },
-        // CRITICAL: Use automatic_payment_methods ONLY (no payment_method_types)
-        automatic_payment_methods: {
-          enabled: true,
-        },
         shipping: {
           name: data.shipping.name,
           address: data.shipping.address
@@ -120,8 +116,11 @@ export const createPaymentIntent = async (data: PaymentIntentData): Promise<Paym
   }
 };
 
-// Confirm payment using Stripe.js (frontend confirmation)
-export const confirmStripePayment = async (clientSecret: string, paymentMethod?: any) => {
+// Confirm payment using Stripe.js with proper error handling
+export const confirmStripePayment = async (
+  clientSecret: string, 
+  paymentMethodData: any
+): Promise<PaymentResult> => {
   try {
     const stripe = await stripePromise;
     
@@ -129,25 +128,30 @@ export const confirmStripePayment = async (clientSecret: string, paymentMethod?:
       throw new Error('Stripe failed to initialize');
     }
 
-    // Use confirmPayment for automatic_payment_methods flow
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      clientSecret,
-      confirmParams: {
-        return_url: `${window.location.origin}/payment-success`,
-        payment_method: paymentMethod?.id,
+    console.log('Confirming payment with client secret:', clientSecret);
+
+    // Use confirmCardPayment instead of confirmPayment for better compatibility
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: paymentMethodData.card,
+        billing_details: paymentMethodData.billing_details,
       },
-      redirect: 'if_required',
     });
 
     if (error) {
-      throw new Error(error.message);
+      console.error('Payment confirmation error:', error);
+      throw new Error(error.message || 'Payment confirmation failed');
     }
 
-    return {
-      success: paymentIntent?.status === 'succeeded',
-      paymentIntent,
-      error: paymentIntent?.status !== 'succeeded' ? 'Payment failed' : undefined
-    };
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      console.log('Payment confirmed successfully:', paymentIntent);
+      return {
+        success: true,
+        paymentIntent,
+      };
+    } else {
+      throw new Error(`Payment failed with status: ${paymentIntent?.status || 'unknown'}`);
+    }
 
   } catch (error) {
     console.error('Error confirming payment:', error);
@@ -206,7 +210,7 @@ export const confirmPayment = async (paymentIntentId: string): Promise<PaymentRe
   }
 };
 
-// Utility functions (keep these)
+// Utility functions
 export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

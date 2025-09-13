@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Lock, CheckCircle, AlertCircle, Loader2, CreditCard } from 'lucide-react';
+import { createPaymentIntent, confirmStripePayment } from '../utils/paymentService';
 
 interface PaymentFormProps {
   total: number;
@@ -29,9 +30,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     if (!stripe || !elements) {
       onPaymentResult({
         type: 'error',
-        title: 'Erreur du système de paiement',
-        message: 'Le système de paiement est en cours de chargement. Veuillez réessayer.',
-        details: 'Le système de paiement est temporairement indisponible.'
+        title: 'Payment System Error',
+        message: 'Payment system is loading. Please try again.',
+        details: 'The payment system is temporarily unavailable.'
       });
       return;
     }
@@ -40,9 +41,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     if (!cardElement) {
       onPaymentResult({
         type: 'error',
-        title: 'Erreur de carte',
-        message: 'Veuillez saisir les détails de votre carte.',
-        details: 'Les informations de carte sont requises pour traiter le paiement.'
+        title: 'Card Error',
+        message: 'Please enter your card details.',
+        details: 'Card information is required to process payment.'
       });
       return;
     }
@@ -50,9 +51,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     if (!isFormValid) {
       onPaymentResult({
         type: 'error',
-        title: 'Formulaire incomplet',
-        message: 'Veuillez remplir tous les champs requis.',
-        details: 'Toutes les informations de livraison sont nécessaires.'
+        title: 'Form Incomplete',
+        message: 'Please fill in all required fields.',
+        details: 'All shipping information is required.'
       });
       return;
     }
@@ -60,59 +61,82 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     setIsProcessing(true);
 
     try {
-      // Create payment method
-      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-        billing_details: {
-          name: `${formData.firstName} ${formData.lastName}`,
+      // Step 1: Create payment intent
+      const paymentIntentResult = await createPaymentIntent({
+        amount: total,
+        currency: 'USD',
+        customer: {
           email: formData.email,
-          phone: formData.phone,
+          name: `${formData.firstName} ${formData.lastName}`,
+          phone: formData.phone
+        },
+        items: items.map(item => ({
+          id: item.id.toString(),
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity || 1,
+          color: item.shade || item.color,
+          length: item.length
+        })),
+        shipping: {
+          name: `${formData.firstName} ${formData.lastName}`,
           address: {
             line1: formData.address,
             city: formData.city,
             state: formData.state,
             postal_code: formData.zipCode,
-            country: formData.country,
-          },
-        },
+            country: formData.country || 'US'
+          }
+        }
       });
 
-      if (paymentMethodError) {
-        throw new Error(paymentMethodError.message);
+      if (!paymentIntentResult.success) {
+        throw new Error(paymentIntentResult.error || 'Failed to create payment intent');
       }
 
-      // Simulate successful payment for demo
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const mockPaymentResult = {
-        id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        status: 'succeeded',
-        amount: Math.round(total * 100),
-        currency: 'eur',
-        payment_method: paymentMethod,
-        created: Math.floor(Date.now() / 1000),
-        receipt_url: `https://pay.stripe.com/receipts/demo_${Date.now()}`,
-      };
-
-      onPaymentResult({
-        type: 'success',
-        title: 'Payment Successful! 🎉',
-        message: 'Your order has been confirmed and will be processed within 24 hours.',
-        details: 'You will receive a confirmation email with your order details and tracking information.',
-        paymentData: mockPaymentResult,
-        orderData: {
-          customerInfo: {
+      // Step 2: Confirm payment with the card element
+      const confirmResult = await confirmStripePayment(
+        paymentIntentResult.clientSecret!,
+        {
+          card: cardElement,
+          billing_details: {
             name: `${formData.firstName} ${formData.lastName}`,
             email: formData.email,
             phone: formData.phone,
+            address: {
+              line1: formData.address,
+              city: formData.city,
+              state: formData.state,
+              postal_code: formData.zipCode,
+              country: formData.country || 'US',
+            },
           },
-          items: items,
-          total: total
-        },
-      });
+        }
+      );
+
+      if (confirmResult.success && confirmResult.paymentIntent) {
+        onPaymentResult({
+          type: 'success',
+          title: 'Payment Successful! 🎉',
+          message: 'Your order has been confirmed and will be processed within 24 hours.',
+          details: 'You will receive a confirmation email shortly with your order details and tracking information.',
+          paymentData: confirmResult.paymentIntent,
+          orderData: {
+            customerInfo: {
+              name: `${formData.firstName} ${formData.lastName}`,
+              email: formData.email,
+              phone: formData.phone,
+            },
+            items: items,
+            total: total
+          },
+        });
+      } else {
+        throw new Error(confirmResult.error || 'Payment confirmation failed');
+      }
 
     } catch (error) {
+      console.error('Payment processing error:', error);
       onPaymentResult({
         type: 'error',
         title: 'Payment Failed',

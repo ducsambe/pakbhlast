@@ -6,6 +6,7 @@ import PostPaymentModal from './PostPaymentModal';
 import PayPalButton from './PayPalButton';
 import { sendOrderNotificationEmail } from '../utils/emailService';
 import { stripePromise } from '../utils/stripeHelpers';
+import { createPaymentIntent, confirmStripePayment } from '../utils/paymentService';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -53,13 +54,10 @@ const PaymentFormComponent: React.FC<{
     setIsProcessing(true);
 
     try {
-      // Import payment service
-      const { createPaymentIntent, confirmPayment } = await import('../utils/paymentService');
-      
-      // Create payment intent
+      // Step 1: Create payment intent
       const paymentIntentResult = await createPaymentIntent({
         amount: total,
-        currency: PAYMENT_CONFIG.stripe.currency,
+        currency: 'USD',
         customer: {
           email: formData.email,
           name: `${formData.firstName} ${formData.lastName}`,
@@ -89,50 +87,35 @@ const PaymentFormComponent: React.FC<{
         throw new Error(paymentIntentResult.error || 'Failed to create payment intent');
       }
 
-      // Create payment method
-      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-        billing_details: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          phone: formData.phone,
-          address: {
-            line1: formData.address,
-            city: formData.city,
-            state: formData.state,
-            postal_code: formData.zipCode,
-            country: formData.country || 'US',
-          },
-        },
-      });
-
-      if (paymentMethodError) {
-        throw new Error(paymentMethodError.message);
-      }
-
-      // Confirm payment with Stripe
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
-        paymentIntentResult.paymentIntent.client_secret,
+      // Step 2: Confirm payment using the updated service
+      const confirmResult = await confirmStripePayment(
+        paymentIntentResult.clientSecret!,
         {
-          payment_method: paymentMethod.id
+          card: cardElement,
+          billing_details: {
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            phone: formData.phone,
+            address: {
+              line1: formData.address,
+              city: formData.city,
+              state: formData.state,
+              postal_code: formData.zipCode,
+              country: formData.country || 'US',
+            },
+          },
         }
       );
 
-      if (confirmError) {
-        throw new Error(confirmError.message);
-      }
-
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // Confirm payment on server for email notifications
-        await confirmPayment(paymentIntent.id);
+      if (confirmResult.success && confirmResult.paymentIntent) {
+        console.log('Payment successful:', confirmResult.paymentIntent);
 
         onPaymentResult({
           type: 'success',
           title: 'Payment Successful! 🎉',
           message: 'Your order has been confirmed and will be processed within 24 hours.',
           details: 'You will receive a confirmation email shortly with your order details and tracking information.',
-          paymentData: paymentIntent,
+          paymentData: confirmResult.paymentIntent,
           orderData: {
             customerInfo: {
               name: `${formData.firstName} ${formData.lastName}`,
@@ -144,9 +127,10 @@ const PaymentFormComponent: React.FC<{
           },
         });
       } else {
-        throw new Error('Payment was not completed successfully');
+        throw new Error(confirmResult.error || 'Payment confirmation failed');
       }
     } catch (error) {
+      console.error('Payment error:', error);
       onPaymentResult({
         type: 'error',
         title: 'Payment Failed',
