@@ -23,20 +23,20 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Get PayPal Client ID - use a fallback since process.env isn't available in browser
-  // In a real app, you would pass this as a prop or use a different configuration method
-  const paypalClientId = "";
+  // Get PayPal Client ID from config
+  const paypalClientId = "BAA7oT9WHYEHwwj5uhdWR0W9f3AU6TUCkEQ0JcxDeAVnNWOl4u17c3wYVcmCWmDXOe3Hvh5E0hqFjp6W-4";
   // Check if PayPal is properly configured
-  const isPayPalConfigured = !!paypalClientId && paypalClientId !== "YOUR_PAYPAL_CLIENT_ID";
+  const isPayPalConfigured = !!paypalClientId;
 
   // PayPal integration options
   const paypalOptions = {
     "client-id": paypalClientId,
     currency: "USD",
     intent: "capture",
-    "enable-funding": "paylater,card",
+    "enable-funding": "paylater,card,venmo",
     "disable-funding": "venmo",
-    "data-sdk-integration-source": "button-factory"
+    "data-sdk-integration-source": "button-factory",
+    "vault": false
   };
 
   // Format items for PayPal (limit name and description length)

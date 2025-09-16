@@ -242,16 +242,16 @@ const CheckoutForm: React.FC<StripePaymentFormProps> = ({
       )}
 
       {/* Test Cards Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-bold text-blue-800 mb-2 flex items-center">
-          <CreditCard size={16} className="mr-2" />
-          Test Mode - Use These Cards
+      {/* Live Payment Notice */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h4 className="font-bold text-green-800 mb-2 flex items-center">
+          <Shield size={16} className="mr-2" />
+          Secure Live Payments
         </h4>
-        <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>Success:</strong> 4242 4242 4242 4242</p>
-          <p><strong>Declined:</strong> 4000 0000 0000 0002</p>
-          <p><strong>Requires Auth:</strong> 4000 0025 0000 3155</p>
-          <p className="text-blue-600 mt-2">Use any future expiry date and any 3-digit CVC</p>
+        <div className="text-sm text-green-700">
+          <p>🔒 SSL encrypted and PCI compliant</p>
+          <p>💳 All major cards accepted</p>
+          <p>🛡️ Advanced fraud protection</p>
         </div>
       </div>
 

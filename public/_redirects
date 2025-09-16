@@ -1,1 +1,5 @@
-/*    /index.html    200
+# Netlify redirects (backup for if you switch to Netlify)
+/*    /index.html   200
+
+# SPA fallback for all routes
+/api/*  https://serveforpakbh.onrender.com/api/:splat  200

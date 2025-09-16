@@ -128,7 +128,7 @@ const ProductPage: React.FC = () => {
     // Calculate total price correctly - FIXED
     const totalBeforeDiscount = adjustedPrice * selectedPack
     const discountAmount = (totalBeforeDiscount * packOption.discount) / 100 
-    const packPriceAfterDiscount = totalBeforeDiscount -  discountAmount
+    const packPriceAfterDiscount = totalBeforeDiscount - discountAmount
     const totalPrice = packPriceAfterDiscount * quantity
     
     // Calculate price per pack correctly - FIXED
@@ -152,7 +152,7 @@ const ProductPage: React.FC = () => {
   const handleAddToCart = () => {
     if (!currentProduct) return
 
-  const  packOption = packOptions.find((p) => p.count === selectedPack)  || packOption[0]
+    const packOption = packOptions.find((p) => p.count === selectedPack) || packOptions[0]
     
     const basePrice = getPriceForLength(selectedLength)
     const colorMultiplier = getColorMultiplier(selectedColor)
@@ -172,10 +172,10 @@ const ProductPage: React.FC = () => {
       quantity: quantity * selectedPack, // Total number of individual packs
       selectedPacks: selectedPack,
       slug: currentProduct.slug,
-     packSize : selectedPack,
-     originalPrice : totalBeforeDiscount,
-    discount : packOption.discount,
-     savings : discountAmount,
+      packSize: selectedPack,
+      originalPrice: totalBeforeDiscount,
+      discount: packOption.discount,
+      savings: discountAmount,
     }
     
     addToCart(cartItem)
@@ -189,7 +189,7 @@ const ProductPage: React.FC = () => {
       <span>Added ${selectedPack} pack(s) to cart! </span>
     `
     document.body.appendChild(successDiv)
-    setTimeout(() => successDiv.remove(),2000)
+    setTimeout(() => successDiv.remove(),1500)
   }
 
   const handleBuyNow = () => {
@@ -398,12 +398,12 @@ const ProductPage: React.FC = () => {
                     <span className="text-3xl font-bold text-gray-900">${pricing.packPriceAfterDiscount?.toFixed(2) || pricing.totalPrice.toFixed(2)}</span>
                     {pricing.originalPrice > pricing.basePrice && (
                       <>                   
-                    <span className="text-xl text-gray-400 line-through">${(pricing.originalPrice*selectedPack ).toFixed(2)}</span>
-                    <div className="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-bold">
-                      -{packOptions.find(p => p.count === selectedPack)?.discount || 0}%
-                    </div>
+                        <span className="text-xl text-gray-400 line-through">${(pricing.originalPrice * selectedPack).toFixed(2)}</span>
+                        <div className="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-bold">
+                          -{packOptions.find(p => p.count === selectedPack)?.discount || 0}%
+                        </div>
                       </>
-                      )}
+                    )}
                   </div>
                 </div>
 
@@ -414,12 +414,13 @@ const ProductPage: React.FC = () => {
                     </p>
                   </div>
                 )}
-                 <div className="text-sm text-grey-600">
-                 <p> Price per individual pack: ${pricing.pricePerPack.toFixed(2)} </p>
+                <div className="text-sm text-grey-600">
+                  <p> Price per individual pack: ${pricing.pricePerPack.toFixed(2)} </p>
 
-                 {quantity > 1 && ( <p className="font-meduim text-gray-900 mt-2"> Total for {quantity} set(s): ${pricing.totalPrice.toFixed(2)} </p>
-                 )}
-              </div>
+                  {quantity > 1 && ( 
+                    <p className="font-meduim text-gray-900 mt-2"> Total for {quantity} set(s): ${pricing.totalPrice.toFixed(2)} </p>
+                  )}
+                </div>
               </div>
 
               {/* Color Selection */}
@@ -502,60 +503,60 @@ const ProductPage: React.FC = () => {
                     const finalPrice = totalBeforeDiscount - discountAmount
 
                     return ( 
-                    <button
-                      key={pack.count}
-                      onClick={() => setSelectedPack(pack.count)}
-                      className={`w-full p-4 border-2 rounded-lg text-left transition-all ${
-                        selectedPack === pack.count
-                          ? "border-gray-900 bg-gray-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      {pack.badge && ( 
-                      <div className={`absolute -top-2 -right-2 px-3 py-1 rounded-full text-xs font-bold ${  
-                        pack.badge === "Popular" ? "bg-blue-500 text-white" : "bg-green-500 text white" 
-                      }`} >
-                      {pack.badge}
-                        </div>
-                      )}
-
-                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center  ${
-                              selectedPack === pack.count ? "bg-gray-900 border-gray-900" : "border-gray-300"
-                            }`}
-                          >
-                            {selectedPack === pack.count && <Check size={12} className="text-white" />}
+                      <button
+                        key={pack.count}
+                        onClick={() => setSelectedPack(pack.count)}
+                        className={`w-full p-4 border-2 rounded-lg text-left transition-all relative ${
+                          selectedPack === pack.count
+                            ? "border-gray-900 bg-gray-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        {pack.badge && ( 
+                          <div className={`absolute -top-2 -right-2 px-3 py-1 rounded-full text-xs font-bold ${  
+                            pack.badge === "Popular" ? "bg-blue-500 text-white" : "bg-green-500 text-white" 
+                          }`} >
+                            {pack.badge}
                           </div>
-                           <div>
-                          <span className="font-medium">{pack.label}</span>
-                         <div className="flex items-center space-x-2 mt-1 ">
-                            <span  className= "text-2xl font-bold text-gray-900 ">
-                               ${finalPrice.toFixed(2)}
-                            </span>
-                        {pack.discount > 0 && (
-                          <>
-                          <span className="text-green-400 line-through">
-                            ${totalBeforeDiscount.toFixed(2)}
-                          </span>
-                           <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">
-                            save  ${discountAmount.toFixed(2)}
-                          </span>
-                          </>
                         )}
-                      </div>
-                      {pack.discount > 0 && (
-                         <p className="text-green-600 font-medium mt-1">
-                          {pack.discount}% off . $ {(finalPrice / pack.count).toFixed(2)} per pack
-                           </p>
-                      )}
-                      </div>
-                       </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center  ${
+                                selectedPack === pack.count ? "bg-gray-900 border-gray-900" : "border-gray-300"
+                              }`}
+                            >
+                              {selectedPack === pack.count && <Check size={12} className="text-white" />}
+                            </div>
+                            <div>
+                              <span className="font-medium">{pack.label}</span>
+                              <div className="flex items-center space-x-2 mt-1 ">
+                                <span className="text-2xl font-bold text-gray-900 ">
+                                  ${finalPrice.toFixed(2)}
+                                </span>
+                                {pack.discount > 0 && (
+                                  <>
+                                    <span className="text-gray-400 line-through">
+                                      ${totalBeforeDiscount.toFixed(2)}
+                                    </span>
+                                    <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">
+                                      save ${discountAmount.toFixed(2)}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              {pack.discount > 0 && (
+                                <p className="text-green-600 font-medium mt-1">
+                                  {pack.discount}% off • ${(finalPrice / pack.count).toFixed(2)} per pack
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                    </button>
+                      </button>
                     )
-})}
+                  })}
                 </div>
               </div>
 
@@ -709,164 +710,164 @@ const ProductPage: React.FC = () => {
                 </div>
               )} 
 
-          {activeTab === "installation" && (
-  <div>
-    <h3 className="text-xl font-bold mb-6">Installation Guide</h3>
+              {activeTab === "installation" && (
+                <div>
+                  <h3 className="text-xl font-bold mb-6">Installation Guide</h3>
 
-    <div className="mb-8">
-      <h4 className="font-semibold mb-4">Video Tutorial</h4>
-      <div className="bg-gray-100 rounded-xl p-4 md:p-6">
-        {/* Video Container with responsive max width */}
-        <div className="max-w-full md:max-w-2xl lg:max-w-3xl mx-auto">
-          <div className="relative pt-[56.25%]"> {/* 16:9 aspect ratio container */}
-            <video 
-              controls 
-              className="absolute top-0 left-0 w-full h-full rounded-lg shadow-md object-cover"
-              poster="/video-thumbnail.jpg"
-            >
-              <source src="/WhatsApp Video 2025-08-30 at 18.59.13_445549ec.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        </div>
-        <div className="mt-3 text-center">
-          <p className="text-gray-700 font-medium">Professional Installation Tutorial</p>
-          <p className="text-sm text-gray-500">Watch our step-by-step video guide</p>
-        </div>
-      </div>
-    </div>
+                  <div className="mb-8">
+                    <h4 className="font-semibold mb-4">Video Tutorial</h4>
+                    <div className="bg-gray-100 rounded-xl p-4 md:p-6">
+                      {/* Video Container with responsive max width */}
+                      <div className="max-w-full md:max-w-2xl lg:max-w-3xl mx-auto">
+                        <div className="relative pt-[56.25%]"> {/* 16:9 aspect ratio container */}
+                          <video 
+                            controls 
+                            className="absolute top-0 left-0 w-full h-full rounded-lg shadow-md object-cover"
+                            poster="/video-thumbnail.jpg"
+                          >
+                            <source src="/WhatsApp Video 2025-08-30 at 18.59.13_445549ec.mp4" type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-center">
+                        <p className="text-gray-700 font-medium">Professional Installation Tutorial</p>
+                        <p className="text-sm text-gray-500">Watch our step-by-step video guide</p>
+                      </div>
+                    </div>
+                  </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[
-        {
-          step: 1,
-          title: "Prepare Your Hair",
-          description: "Wash and completely dry your natural hair.",
-          image: "/OIP.webp",
-          tip: "Use a wide-tooth comb to prevent breakage",
-        },
-        {
-          step: 2,
-          title: "Section the Hair",
-          description: "Create clean, even sections about 1/4 inch wide.",
-          image: "/dark_brown_afro_kinky_bulk_hair_perfect_for_protective_hairstyles.webp",
-          tip: "Smaller sections create neater styles",
-        },
-        {
-          step: 3,
-          title: "Attach the Extensions",
-          description: "Attach bulk hair using your preferred method.",
-          image: "/24_0de26919.jpg",
-          tip: "Don't braid too tightly to avoid tension",
-        },
-        {
-          step: 4,
-          title: "Braid or Twist",
-          description: "Incorporate bulk hair with your natural hair.",
-          image: "/03cd6814.jpg",
-          tip: "Keep consistent tension throughout",
-        },
-        {
-          step: 5,
-          title: "Final Styling",
-          description: "Style as desired and apply light oil.",
-          image: "/IMG-20250629-WA0185.jpg",
-          tip: "Less is more when it comes to products",
-        },
-      ].map((step) => (
-        <div key={step.step} className="bg-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
-              {step.step}
-            </div>
-            <h4 className="font-semibold text-lg">{step.title}</h4>
-          </div>
-          <img
-            src={step.image || "/placeholder.svg"}
-            alt={step.title}
-            className="w-full h-48 object-cover rounded-lg mb-4"
-            loading="lazy"
-          />
-          <p className="text-gray-700 mb-3">{step.description}</p>
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
-            <p className="text-blue-800 text-sm">
-              <strong>Pro Tip:</strong> {step.tip}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      {
+                        step: 1,
+                        title: "Prepare Your Hair",
+                        description: "Wash and completely dry your natural hair.",
+                        image: "/OIP.webp",
+                        tip: "Use a wide-tooth comb to prevent breakage",
+                      },
+                      {
+                        step: 2,
+                        title: "Section the Hair",
+                        description: "Create clean, even sections about 1/4 inch wide.",
+                        image: "/dark_brown_afro_kinky_bulk_hair_perfect_for_protective_hairstyles.webp",
+                        tip: "Smaller sections create neater styles",
+                      },
+                      {
+                        step: 3,
+                        title: "Attach the Extensions",
+                        description: "Attach bulk hair using your preferred method.",
+                        image: "/24_0de26919.jpg",
+                        tip: "Don't braid too tightly to avoid tension",
+                      },
+                      {
+                        step: 4,
+                        title: "Braid or Twist",
+                        description: "Incorporate bulk hair with your natural hair.",
+                        image: "/03cd6814.jpg",
+                        tip: "Keep consistent tension throughout",
+                      },
+                      {
+                        step: 5,
+                        title: "Final Styling",
+                        description: "Style as desired and apply light oil.",
+                        image: "/IMG-20250629-WA0185.jpg",
+                        tip: "Less is more when it comes to products",
+                      },
+                    ].map((step) => (
+                      <div key={step.step} className="bg-white rounded-xl p-6 shadow-lg">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
+                            {step.step}
+                          </div>
+                          <h4 className="font-semibold text-lg">{step.title}</h4>
+                        </div>
+                        <img
+                          src={step.image || "/placeholder.svg"}
+                          alt={step.title}
+                          className="w-full h-48 object-cover rounded-lg mb-4"
+                          loading="lazy"
+                        />
+                        <p className="text-gray-700 mb-3">{step.description}</p>
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
+                          <p className="text-blue-800 text-sm">
+                            <strong>Pro Tip:</strong> {step.tip}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-{activeTab === "reviews" && (
-  <div>
-    <div className="flex items-center justify-between mb-6">
-      <h3 className="text-xl font-bold">Customer Reviews</h3>
-      <button
-        onClick={() => setShowReviewModal(true)}
-        className="bg-gray-900 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
-      >
-        Write a Review
-      </button>
-    </div>
+              {activeTab === "reviews" && (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold">Customer Reviews</h3>
+                    <button
+                      onClick={() => setShowReviewModal(true)}
+                      className="bg-gray-900 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+                    >
+                      Write a Review
+                    </button>
+                  </div>
 
-    <div className="bg-white rounded-xl p-6 shadow-lg mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="text-center">
-          <div className="text-4xl font-bold text-gray-900 mb-2">{currentProduct?.rating}</div>
-          <div className="flex items-center justify-center space-x-1 mb-2">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={20}
-                className={`${i < Math.floor(currentProduct?.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-              />
-            ))}
-          </div>
-          <p className="text-gray-600">Based on {currentProduct?.reviews} reviews</p>
-        </div>
-        <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <div key={rating} className="flex items-center space-x-2">
-              <span className="text-sm w-8">{rating}★</span>
-              <div className="flex-1 bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-yellow-400 h-2 rounded-full"
-                  style={{
-                    width: `${rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 5 : rating === 2 ? 3 : 2}%`,
-                  }}
-                ></div>
-              </div>
-              <span className="text-sm text-gray-600 w-8">
-                {rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 5 : rating === 2 ? 3 : 2}%
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+                  <div className="bg-white rounded-xl p-6 shadow-lg mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="text-center">
+                        <div className="text-4xl font-bold text-gray-900 mb-2">{currentProduct?.rating}</div>
+                        <div className="flex items-center justify-center space-x-1 mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={20}
+                              className={`${i < Math.floor(currentProduct?.rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-gray-600">Based on {currentProduct?.reviews} reviews</p>
+                      </div>
+                      <div className="space-y-2">
+                        {[5, 4, 3, 2, 1].map((rating) => (
+                          <div key={rating} className="flex items-center space-x-2">
+                            <span className="text-sm w-8">{rating}★</span>
+                            <div className="flex-1 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-yellow-400 h-2 rounded-full"
+                                style={{
+                                  width: `${rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 5 : rating === 2 ? 3 : 2}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-gray-600 w-8">
+                              {rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 5 : rating === 2 ? 3 : 2}%
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-    <div className="space-y-6">
-      {[
-        {
-          name: "Sarah M.",
-          rating: 5,
-          date: "2 weeks ago",
-          title: "Amazing quality!",
-          review: "This hair is absolutely beautiful! The texture is perfect.",
-          verified: true,
-        },
-        {
-          name: "Maya K.",
-          rating: 5,
-          date: "1 month ago",
-          title: "Perfect for protective styling",
-          review: "I use this for my daughter's braids and it's perfect.",
-          verified: true,
-        },
-        {
-          name: "Aisha T.",
+                  <div className="space-y-6">
+                    {[
+                      {
+                        name: "Sarah M.",
+                        rating: 5,
+                        date: "2 weeks ago",
+                        title: "Amazing quality!",
+                        review: "This hair is absolutely beautiful! The texture is perfect.",
+                        verified: true,
+                      },
+                      {
+                        name: "Maya K.",
+                        rating: 5,
+                        date: "1 month ago",
+                        title: "Perfect for protective styling",
+                        review: "I use this for my daughter's braids and it's perfect.",
+                        verified: true,
+                      },
+                      {
+                        name: "Aisha T.",
           rating: 4,
           date: "3 weeks ago",
           title: "Great value",

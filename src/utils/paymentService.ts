@@ -1,9 +1,11 @@
 // Enhanced payment service for client's Stripe account
 import { stripePromise } from './stripeHelpers';
 
-// Use local server for development, fallback to demo mode for production
-const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : null;
-const DEMO_MODE = !import.meta.env.DEV || !API_BASE_URL;
+// Use production server for live payments
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001/api' 
+  : 'https://serveforpakbh.onrender.com/api';
+const DEMO_MODE = false; // Always use real Stripe integration
 
 export interface PaymentIntentData {
   amount: number;

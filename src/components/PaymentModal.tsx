@@ -761,6 +761,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, total, ite
         </div>
       </div>
 
+      {/* Live Payment Notice */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h4 className="font-bold text-green-800 mb-2 flex items-center">
+          <Shield size={16} className="mr-2" />
+          Live Payment Mode
+        </h4>
+        <div className="text-sm text-green-700">
+          <p>✅ Real payments are processed securely</p>
+          <p>🔒 Your card will be charged the displayed amount</p>
+          <p>📧 You'll receive a receipt via email</p>
+        </div>
+      </div>
+
       {/* Post Payment Modal */}
       <PostPaymentModal
         isOpen={showPostPayment}

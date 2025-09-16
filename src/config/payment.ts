@@ -1,22 +1,21 @@
-// Payment Configuration
-// Updated with working Stripe test keys
+
 
 export const PAYMENT_CONFIG = {
-  // Stripe Configuration - Working test key
+  
   stripe: {
-    publishableKey: "pk_test_51Rse6LQcCvouwfQJLwKe7MwjVeko3pwuieI9ggjHRI4g2DxiFas3WMHyPxuqSecE145V2eAwBG3E0R6iV22C9Xvn00UmKGNDHb",
+    publishableKey: "pk_live_Q18qJa46wipTLV9n7mxkGAJm",
     currency: "usd",
-    environment: "test"
+    environment: "live"
   },
-  // PayPal Configuration - Updated with client's ID
+  
   paypal: {
-    clientId: "ARhyCC1nOzwCaF2ElixgnO7m4A_KfuRbR31eMe7xDjpvmVNFNpts0dbOSMsIrwoHaITvwm_vQaNyXP_t",
+    clientId: "BAA7oT9WHYEHwwj5uhdWR0W9f3AU6TUCkEQ0JcxDeAVnNWOl4u17c3wYVcmCWmDXOe3Hvh5E0hqFjp6W-4",
     currency: "usd",
-    environment: "sandbox"
+    environment: "live"
   }
 };
 
-// Test Card Numbers for Development
+
 export const TEST_CARDS = {
   visa: "4242424242424242",
   visaDebit: "4000056655665556", 
@@ -29,7 +28,7 @@ export const TEST_CARDS = {
   processingError: "4000000000000119"
 };
 
-// Payment Methods Configuration
+
 export const PAYMENT_METHODS = {
   card: {
     enabled: true,
@@ -38,7 +37,7 @@ export const PAYMENT_METHODS = {
     description: "Visa, Mastercard, American Express"
   },
   paypal: {
-    enabled: true, // Now enabled with client's PayPal ID
+    enabled: true, 
     name: "PayPal",
     icon: "PayPal", 
     description: "Pay with your PayPal account or Pay Later"
@@ -51,22 +50,22 @@ export const PAYMENT_METHODS = {
   }
 };
 
-// Currency Configuration
+
 export const CURRENCY_CONFIG = {
   code: "USD",
   symbol: "$",
   locale: "en-US"
 };
 
-// Tax Configuration
+
 export const TAX_CONFIG = {
-  rate: 0.00, // No tax for now - adjust as needed
+  rate: 0.00, 
   included: false
 };
 
-// Shipping Configuration
+
 export const SHIPPING_CONFIG = {
-  freeShippingThreshold: 0, // Free shipping on all US orders
+  freeShippingThreshold: 0, 
   defaultRate: 0,
   expeditedRate: 9.99, // Express shipping within US
   canadaRate: 0, // Free to Canada over $75
@@ -74,7 +73,7 @@ export const SHIPPING_CONFIG = {
   internationalRate: 0 // Free international over $150
 };
 
-// Security Configuration
+
 export const SECURITY_CONFIG = {
   maxRetries: 3,
   retryDelay: 1000,
@@ -82,7 +81,7 @@ export const SECURITY_CONFIG = {
   encryptionEnabled: true
 };
 
-// Error Messages
+
 export const ERROR_MESSAGES = {
   CARD_DECLINED: "Your card was declined. Please try a different payment method or contact your bank.",
   EXPIRED_CARD: "Your card has expired. Please use a different card.",
